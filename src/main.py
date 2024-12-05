@@ -69,3 +69,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+# import skimage.io as io
+# from utils import gray_img, otsu, show_images
+# from segmentation.staff_line_removal import StaffLineRemoval
+
+# img = io.imread('./data/input/02.PNG')
+
+# # Convert to grayscale
+# gray = gray_img(img)
+
+# # Threshold the image
+# binary_img = otsu(gray)
+
+# # Remove staff lines (horizontal is True for typical sheet music)
+# spacing, staff_row_positions, no_staff_img = StaffLineRemoval.remove_staff_lines_from_image(binary_img, horizontal=True)
+
+# show_images([img, gray, binary_img, no_staff_img],
+#             ['Original', 'Grayscale', 'Binary', 'No Staff Lines'])
