@@ -95,3 +95,7 @@ def get_region_lines_indices(self, region):
             line.append(line_index+k)
         lines.append(line)
     self.rows.append([np.average(x) for x in lines])
+
+
+def get_binary(img, thresh):
+    return 1*(img > thresh)

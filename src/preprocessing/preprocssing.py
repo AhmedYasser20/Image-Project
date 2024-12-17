@@ -57,7 +57,7 @@ class DeskewProcessor(BaseImageProcessor):
     def __init__(self, 
                  low_threshold: int = 50, 
                  high_threshold: int = 150, 
-                 sigma: float = 2):
+                 sigma: float = 1.065):
         """
         Initialize the DeskewProcessor.
 
@@ -114,12 +114,14 @@ class DeskewProcessor(BaseImageProcessor):
         angle = self.calculate_rotation_angle(image)
         return rotate(image, angle, resize=True, mode='edge')
 
+
+
 # Image Cropping Processor
 class ImageCropper(BaseImageProcessor):
     """
     Processor to crop significant sections of an image.
     """
-    def __init__(self, threshold_ratio: float = 0.002, sections: int = 16):
+    def __init__(self, threshold_ratio: float = 0.2, sections: int = 16):
         """
         Initialize the ImageCropper.
 
@@ -142,12 +144,16 @@ class ImageCropper(BaseImageProcessor):
         """
         rows_sections, cols_sections = [], []
         
+        #get histogram of black pixels in each section
+        image=(image<127).astype(np.uint8)
+        
         for x in range(self.sections):
             start_row = x * image.shape[0] // self.sections
             end_row = (x + 1) * image.shape[0] // self.sections
             section = image[start_row:end_row, :]
             
             black_pixel_count = np.sum(section == 0)
+            
             section_area = section.shape[0] * section.shape[1]
             
             if black_pixel_count >= self.threshold_ratio * section_area:

@@ -1,7 +1,9 @@
+from matplotlib import pyplot as plt
 from preprocessing import DeskewProcessor, ImageCropper, OrientationDetector
 import cv2
 import numpy as np
 from typing import Optional
+
 class ImageProcessingPipeline:
     """
     Pipeline to process an image through multiple processors.
@@ -50,7 +52,14 @@ def main():
     """
     Main function to demonstrate the image processing pipeline.
     """
-    image = cv2.imread('../data/input/01.png', cv2.IMREAD_GRAYSCALE)    
+    image_path = r'B:\Last Year\image\project\Image-Project\data\input\test1.jpg'
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    
+    
+
+    if image is None:
+        raise FileNotFoundError(f"Image file not found at {image_path}")
+    
     pipeline = ImageProcessingPipeline()
     
     results = pipeline.process(image)
@@ -58,10 +67,10 @@ def main():
     print("Deskew Angle:", pipeline.deskew_processor.calculate_rotation_angle(image))
     print("Is Horizontal:", results['is_horizontal'])
     
-    if results['deskewed_image'] is not None:
-        cv2.imshow('Deskewed Image', results['deskewed_image'])
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+    # if results['deskewed_image'] is not None:
+    #     cv2.imshow('Deskewed Image', results['deskewed_image'])
+    #     cv2.waitKey(0)
+    #     cv2.destroyAllWindows()
     if results['cropped_image'] is not None:
         cv2.imshow('Cropped Image', results['cropped_image'])
         cv2.waitKey(0)
