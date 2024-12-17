@@ -95,7 +95,8 @@ class DeskewProcessor(BaseImageProcessor):
         out, angles, _ = hough_line_peaks(h, theta, d)
         
         rotation_number = np.average(np.degrees(angles))
-        
+        if rotation_number <= 20 and rotation_number >= -20:
+            rotation_number = 0
         if rotation_number < 45 and rotation_number != 0:
             rotation_number += 90
         
@@ -121,7 +122,7 @@ class ImageCropper(BaseImageProcessor):
     """
     Processor to crop significant sections of an image.
     """
-    def __init__(self, threshold_ratio: float = 0.2, sections: int = 16):
+    def __init__(self, threshold_ratio: float = 0.002, sections: int = 50):
         """
         Initialize the ImageCropper.
 
@@ -144,16 +145,11 @@ class ImageCropper(BaseImageProcessor):
         """
         rows_sections, cols_sections = [], []
         
-        #get histogram of black pixels in each section
-        image=(image<127).astype(np.uint8)
-        
         for x in range(self.sections):
             start_row = x * image.shape[0] // self.sections
             end_row = (x + 1) * image.shape[0] // self.sections
             section = image[start_row:end_row, :]
-            
             black_pixel_count = np.sum(section == 0)
-            
             section_area = section.shape[0] * section.shape[1]
             
             if black_pixel_count >= self.threshold_ratio * section_area:
@@ -185,7 +181,7 @@ class ImageCropper(BaseImageProcessor):
         self.validate_image(image)
         if len(image.shape) == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+        _, image = cv2.threshold(image, .4, 1, cv2.THRESH_BINARY)
         rows_sections, cols_sections = self._get_significant_sections(image)
         
         if not rows_sections or not cols_sections:
@@ -227,7 +223,6 @@ class OrientationDetector(BaseImageProcessor):
         if len(image.shape) == 3:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         rows, cols = image.shape
-        
         for i in range(rows):
             black_pixel_count = np.sum(image[i, :] == 0)
             
