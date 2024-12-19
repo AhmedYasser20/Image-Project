@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from preprocessing import DeskewProcessor, ImageCropper, OrientationDetector
+from preprocessing import DeskewProcessor, BinarizationProcessor, NoiseRemovalProcessor
 import cv2
 import numpy as np
 from typing import Optional
@@ -8,21 +8,18 @@ class ImageProcessingPipeline:
     """
     Pipeline to process an image through multiple processors.
     """
-    def __init__(self, 
-                 deskew_processor: Optional[DeskewProcessor] = None,
-                 cropper: Optional[ImageCropper] = None,
-                 orientation_detector: Optional[OrientationDetector] = None):
+    def __init__(self, binarization_method: str = 'otsu', deskew_processor: Optional[DeskewProcessor] = None):
         """
         Initialize the ImageProcessingPipeline.
 
         Args:
+            binarization_method (str): Binarization method. Default is 'otsu'.
             deskew_processor (Optional[DeskewProcessor]): Deskew processor.
-            cropper (Optional[ImageCropper]): Image cropper.
-            orientation_detector (Optional[OrientationDetector]): Orientation detector.
         """
+        self.binarization_method = binarization_method
         self.deskew_processor = deskew_processor or DeskewProcessor()
-        self.cropper = cropper or ImageCropper()
-        self.orientation_detector = orientation_detector or OrientationDetector()
+        self.binarizer = BinarizationProcessor(method=binarization_method)
+        self.noise_remover = NoiseRemovalProcessor()
 
     def process(self, image: np.ndarray) -> dict:
         """
@@ -32,50 +29,35 @@ class ImageProcessingPipeline:
             image (np.ndarray): Input image.
 
         Returns:
-            dict: Dictionary containing the original, deskewed, cropped images and orientation status.
+            dict: Dictionary containing the original, binarized, deskewed, and denoised images.
         """
         results = {
             'original_image': image,
+            'binarized_image': None,
             'deskewed_image': None,
-            'cropped_image': None,
-            'is_horizontal': None
+            'denoised_image': None,
         }
-        results['is_horizontal'] = self.orientation_detector.process(image) 
-        if not results['is_horizontal']:
-            results['deskewed_image'] = self.deskew_processor.process(image)
-            results['cropped_image'] = self.cropper.process(results['deskewed_image'])
-        else:
-            results['cropped_image'] = self.cropper.process(image)
+        results['binarized_image'] = self.binarizer.process(image)
+        results['deskewed_image'] = self.deskew_processor.process(results['binarized_image'])
+        results['denoised_image'] = self.noise_remover.process(results['deskewed_image'])
         return results
 
 def main():
     """
     Main function to demonstrate the image processing pipeline.
     """
-    image_path = os.path.join(os.getcwd(), 'data', 'input', 'test1.jpg')
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    
-    if image is None:
-        raise FileNotFoundError(f"Image file not found at {image_path}")
-    pipeline = ImageProcessingPipeline()
-    results = pipeline.process(image)
-        
-    print("Deskew Angle:", pipeline.deskew_processor.calculate_rotation_angle(image))
-    print("Is Horizontal:", results['is_horizontal'])
-    
-    if results['deskewed_image'] is not None:
-        cv2.imshow('Deskewed Image', results['deskewed_image'])
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    if results['cropped_image'] is not None:
-        cv2.imshow('Cropped Image', results['cropped_image'])
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-
-    img_path = image_path.replace("input", "output")
-    img_path = img_path.replace(img_path.split("/")[-1], image_path.split("/")[-1].replace(".jpg", "_cropped.jpg"))
-    cv2.imwrite(img_path, (results['cropped_image']*255).astype(np.uint8))
+    _path = os.path.join(os.getcwd(), 'data', 'input')
+    for file in os.listdir(_path):
+        if file.endswith(".jpg"):
+            image_path = os.path.join(_path, file)
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+            if image is None:
+                raise FileNotFoundError(f"Image file not found at {image_path}")
+            pipeline = ImageProcessingPipeline()
+            results = pipeline.process(image)
+            img_path = image_path.replace("input", "output")
+            img_path = img_path.replace(img_path.split("/")[-1], image_path.split("/")[-1].replace(".jpg", "_clean.jpg"))
+            cv2.imwrite(img_path, (results['denoised_image']))
 if __name__ == "__main__":
     main()
 

@@ -1,1 +1,1 @@
-from .preprocssing import DeskewProcessor, ImageCropper, OrientationDetector
+from .preprocssing import DeskewProcessor, BinarizationProcessor, NoiseRemovalProcessor
