@@ -196,6 +196,7 @@ class DeskewProcessor(BaseImageProcessor):
                     lines.append(line)
                 old_angle = abs(DeskewProcessor._line_angle(np.array(lines[-1]).flatten()))
             line_length = lambda x: DeskewProcessor._line_length(np.array(x).flatten())
+
             lines.sort(key=line_length, reverse=True)
             return DeskewProcessor._sort_boundary_lines(lines[:4])
     @staticmethod 
@@ -351,6 +352,15 @@ class DeskewProcessor(BaseImageProcessor):
             point[0] < 0 or point[0] >= image.shape[1] or point[1] < 0 or point[1] >= image.shape[0]
             for point in points
         )
+    @staticmethod
+    def _calculate_deskew_angle(orient_angle: float, hough_angle: float) -> float:
+        if abs(abs(hough_angle) - abs(orient_angle)) <= 5:
+            return np.mean([orient_angle, hough_angle])
+        deskew_angle = hough_angle 
+        if (abs(abs(hough_angle) - abs(orient_angle)) >160):
+            if abs(orient_angle) > abs(hough_angle) :
+                deskew_angle = orient_angle
+        return deskew_angle
     def process(self, img: np.ndarray) -> np.ndarray:
         """
         Process the image to deskew it.
@@ -371,8 +381,10 @@ class DeskewProcessor(BaseImageProcessor):
         if abs(hough_angle) <= 2: 
             return img
         orient_angle = OrientationDetector._orientation_angle(image)
-        angle = np.mean([abs(orient_angle), abs(hough_angle)])
-        angle = self._normalize_angle(angle)
+        angle = self._calculate_deskew_angle(orient_angle, hough_angle)
+        print(f"Orientation Angle: {orient_angle} Hough Angle: {hough_angle} Deskew Angle: {angle}")
+        if abs(angle) <= 2:
+            return img
         image_rotated = self._rotate_image(image, angle)
         average_color = np.mean(img)
         orignal_rotated = self._rotate_image(img, angle, average_color)
@@ -481,7 +493,8 @@ class OrientationDetector(BaseImageProcessor):
     def _orientation_angle(image: np.ndarray) -> float:
         """
         Calculate the orientation angle of the image.
-
+        using the minimum area rectangle method.
+        which is the angle of the minimum bounding rectangle.
         Args:
             image (np.ndarray): Input image.
 

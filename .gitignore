@@ -19,3 +19,7 @@ __pycache__/
 # Misc
 .DS_Store
 *.log
+data/input/Dataset/*
+data/input/datasets/
+
+data/input/Dataset/
