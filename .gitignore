@@ -20,4 +20,4 @@ __pycache__/
 .DS_Store
 *.log
 
-data/
+data/input/datasets
