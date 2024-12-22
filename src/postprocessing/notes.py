@@ -1,6 +1,16 @@
 from utils import *
 
 def getNearestLine(y, lines):
+    """
+    Find the nearest musical staff line to a given y-coordinate.
+
+    Args:
+        y (int): The y-coordinate to find the nearest line for.
+        lines (numpy array): Array of y-coordinates representing the musical staff lines.
+
+    Returns:
+        tuple: The closest line's y-coordinate, its position modulo 5, and the vertical distance to the input y-coordinate.
+    """
     diff = lines - y
     min_pos = np.argmin(np.abs(diff))
     closest_line = lines[min_pos]
@@ -10,8 +20,20 @@ def getNearestLine(y, lines):
     
     return closest_line, closest_line_pos, distance
 
+
 def getBeamNoteHeads(img, boundingRect, staffHeight, spaceHeight):
-    
+    """
+    Identify the note heads in a beamed note group and count the number of beams.
+
+    Args:
+        img (numpy array): Binary image of the musical sheet.
+        boundingRect (tuple): Bounding rectangle (min_x, min_y, max_x, max_y) around the beam.
+        staffHeight (int): Height of a single staff line.
+        spaceHeight (int): Distance between adjacent staff lines.
+
+    Returns:
+        tuple: Array of detected note head positions and the number of beams.
+    """
     (min_x,min_y,max_x,max_y) = boundingRect
     w = max_x - min_x
     h = max_y - min_y
@@ -59,7 +81,22 @@ def getBeamNoteHeads(img, boundingRect, staffHeight, spaceHeight):
     
     return hists, beams
 
+
+
 def getHeadCharacter(top, distanceTop, bottom, distanceBottom, spaceHeight):
+    """
+    Determine the musical note based on the position of its head relative to staff lines.
+
+    Args:
+        top (int): Position of the top staff line.
+        distanceTop (int): Distance of the note's top edge from the top line.
+        bottom (int): Position of the bottom staff line.
+        distanceBottom (int): Distance of the note's bottom edge from the bottom line.
+        spaceHeight (int): Distance between adjacent staff lines.
+
+    Returns:
+        str: The musical note character.
+    """
     if top == 3 and bottom == 4:
         if -distanceBottom >= 0.25 * spaceHeight:
             return 'e'
@@ -119,7 +156,18 @@ def getHeadCharacter(top, distanceTop, bottom, distanceBottom, spaceHeight):
         return 'g'
     
     
+
+
 def getNumberOfBeams(contour):
+    """
+    Count the number of beams (horizontal lines) in a musical note group.
+
+    Args:
+        contour (numpy array): Binary image of the contour containing the beams.
+
+    Returns:
+        int: Number of beams.
+    """
     width = contour.shape[1]
     height = contour.shape[0]
 
@@ -142,7 +190,23 @@ def getNumberOfBeams(contour):
     
     return np.argmax(hist)
 
+
+
 def getNoteCharacter(originalImage, boundingRect, noteClass, lines, staffHeight, spaceHeight):
+    """
+    Identify the musical character of a note based on its position and features.
+
+    Args:
+        originalImage (numpy array): Binary image of the musical sheet.
+        boundingRect (tuple): Bounding rectangle (min_x, min_y, max_x, max_y) around the note.
+        noteClass (str): Class of the note (e.g., 'a_1', 'a_4').
+        lines (numpy array): Array of y-coordinates representing the staff lines.
+        staffHeight (int): Height of a single staff line.
+        spaceHeight (int): Distance between adjacent staff lines.
+
+    Returns:
+        str: The identified musical character.
+    """
     img = originalImage.copy()
     
     (min_x,min_y,max_x,max_y) = boundingRect
@@ -150,7 +214,6 @@ def getNoteCharacter(originalImage, boundingRect, noteClass, lines, staffHeight,
     h = max_y - min_y
     
     contourImage = img[min_y:max_y, min_x:max_x]
-    
 
     character = ''
     
@@ -191,7 +254,6 @@ def getNoteCharacter(originalImage, boundingRect, noteClass, lines, staffHeight,
             character += '/2'
 
     elif noteClass == 'a_4' or noteClass == 'a_8' or noteClass == 'a_16' or noteClass == 'a_32':
-#         show_images([contourImage])
         yprojection = np.sum(contourImage//255, axis=0)
         yprojection = np.where(yprojection>spaceHeight+2*staffHeight)
         contourImage[:,yprojection] = 0
@@ -200,10 +262,7 @@ def getNoteCharacter(originalImage, boundingRect, noteClass, lines, staffHeight,
     
         for i in range(w):
             window = contourImage[:, i: min(i + 1, w)]
-        #     show_images([window])
-            # xprojection = np.sum(window, axis=1)
             xprojection = window
-        #     xprojection = np.where(xprojection>spaceHeight//4, 1,0)
 
             starts = np.array((window[:-1] == 0) & (window[1:] != 0))
             starts_ix = np.where(starts)[0] + 1
