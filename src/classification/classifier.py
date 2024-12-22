@@ -3,6 +3,16 @@ from postprocessing.notes import *
 import torch
 
 def extract_hog_features(img,target_img_size):
+    """
+    Extracts Histogram of Oriented Gradients (HOG) features from an image.
+
+    Args:
+        img (numpy.ndarray): Input image.
+        target_img_size (tuple): Target size to resize the image (width, height).
+
+    Returns:
+        numpy.ndarray: Flattened HOG feature vector.
+    """
     img = cv2.resize(img, target_img_size)
     win_size = (32, 32)
     cell_size = (4, 4)
@@ -18,6 +28,15 @@ def extract_hog_features(img,target_img_size):
 
 
 def SIFT(image):
+    """
+    Extracts SIFT (Scale-Invariant Feature Transform) descriptors from an image.
+
+    Args:
+        image (numpy.ndarray): Input image.
+
+    Returns:
+        numpy.ndarray: SIFT descriptors of the input image.
+    """
     sift = cv2.SIFT_create()
     if image.dtype != np.uint8:
       image = (image * 255).astype(np.uint8)
@@ -26,12 +45,35 @@ def SIFT(image):
 
 
 def isDot(img, spaceHeight):
+    """
+    Determines if the given image represents a dot based on its height.
+
+    Args:
+        img (numpy.ndarray): Input image.
+        spaceHeight (int): The height of a space in the context of staff lines.
+
+    Returns:
+        bool: True if the image represents a dot, False otherwise.
+    """
     if img.shape[0] > spaceHeight:
         return False
     return True
 
 
 def chord2text(img,cnt_pos,staffHeight,spaceHeight,lines):
+    """
+    Converts a chord image into text representation.
+
+    Args:
+        img (numpy.ndarray): Input chord image.
+        cnt_pos (list): Position of the chord in the image.
+        staffHeight (int): Height of the staff.
+        spaceHeight (int): Height of a space between staff lines.
+        lines (list): Positions of staff lines.
+
+    Returns:
+        str: Text representation of the chord.
+    """
     char_middle = ''
     char_top = ''
     char_down = ''
@@ -68,6 +110,19 @@ def chord2text(img,cnt_pos,staffHeight,spaceHeight,lines):
 
 
 def getchordText(cnt_pos,cnt_img,staffHeight,spaceHeight,lines):
+    """
+    Extracts text representation from an image of a chord.
+
+    Args:
+        cnt_pos (list): Position of the chord in the image.
+        cnt_img (numpy.ndarray): Image containing the chord.
+        staffHeight (int): Height of the staff.
+        spaceHeight (int): Height of a space between staff lines.
+        lines (list): Positions of staff lines.
+
+    Returns:
+        str: Text representation of the chord.
+    """
     h_hist = np.sum(cnt_img,axis=0)
     bar_idx = np.where(h_hist== np.max(h_hist))[0][0]
     img = binary_opening(cnt_img.copy(),np.ones((staffHeight,cnt_img.shape[1]//2)))
@@ -104,6 +159,16 @@ def getchordText(cnt_pos,cnt_img,staffHeight,spaceHeight,lines):
 
 
 def isHalf(img, spaceHeight):
+    """
+    Determines if the given image represents a half note based on projections.
+
+    Args:
+        img (numpy.ndarray): Input image.
+        spaceHeight (int): The height of a space in the context of staff lines.
+
+    Returns:
+        bool: True if the image represents a half note, False otherwise.
+    """
     w = img.shape[1]
     h = img.shape[0]
     hist = np.zeros((w,4), dtype=np.uint32)
@@ -139,7 +204,18 @@ def isHalf(img, spaceHeight):
     else:
         return True
 
+
 def downSize(image, width=1000):
+    """
+    Resizes an image to a specified width while maintaining the aspect ratio.
+
+    Args:
+        image (numpy.ndarray): Input image.
+        width (int): Target width for resizing. Default is 1000.
+
+    Returns:
+        numpy.ndarray: Resized image.
+    """
     (h, w) = image.shape[:2]
     print(h, w)
     shrinkingRatio = width / float(w)
@@ -149,6 +225,18 @@ def downSize(image, width=1000):
 
 
 def knn_predict(X_train, y_train, X_test, k=3):
+    """
+    Predicts the labels of test data using k-Nearest Neighbors (kNN) classification.
+
+    Args:
+        X_train (torch.Tensor): Training data.
+        y_train (torch.Tensor): Training labels.
+        X_test (torch.Tensor): Test data.
+        k (int): Number of neighbors to consider. Default is 3.
+
+    Returns:
+        torch.Tensor: Predicted labels for the test data.
+    """
     distances = torch.cdist(X_test, X_train)    
     knn_indices = distances.topk(k, largest=False).indices
     knn_labels = y_train[knn_indices]
@@ -157,6 +245,18 @@ def knn_predict(X_train, y_train, X_test, k=3):
 
 
 def predict_image(image, X_train, y_train, k=17):
+    """
+    Predicts the class of an image using k-Nearest Neighbors (kNN) classification.
+
+    Args:
+        image (numpy.ndarray): Input image.
+        X_train (torch.Tensor): Training data.
+        y_train (torch.Tensor): Training labels.
+        k (int): Number of neighbors to consider. Default is 17.
+
+    Returns:
+        int: Predicted label for the input image.
+    """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if image is None:
         raise ValueError(f"Invalid image")
