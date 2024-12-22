@@ -2,6 +2,16 @@
 from utils import *
 
 def detect_vertical_line_and_crop(image):
+    """
+    Detects a vertical line in the image and crops the image to remove all pixels
+    to the left of the detected line.
+
+    Args:
+        image (numpy.ndarray): The input image.
+
+    Returns:
+        numpy.ndarray: The cropped image with pixels to the left of the detected vertical line removed.
+    """
     # Read the image
     image_gray = color.rgb2gray(image)
 
@@ -32,6 +42,15 @@ def detect_vertical_line_and_crop(image):
 
 
 def getRefLengths(img):
+    """
+    Computes the most frequent lengths of connected components in the binary image.
+
+    Args:
+        img (numpy.ndarray): Binary image input.
+
+    Returns:
+        tuple: The most frequent pair of lengths (l0, l1) of the connected components.
+    """
     cols = img.shape[1]
     rows = img.shape[0]
     hist = np.zeros((rows, rows), dtype=np.uint32)
@@ -64,6 +83,18 @@ def getRefLengths(img):
 
 
 def getCandidateStaffs(binaryImg, staffHeight):
+    """
+    Filters out non-staff candidates from a binary image based on height thresholds.
+
+    Args:
+        binaryImg (numpy.ndarray): Binary image.
+        staffHeight (int): Expected height of the staff.
+
+    Returns:
+        tuple: 
+            - numpy.ndarray: Filtered binary image.
+            - list: List of candidate staff tuples (column index, start row, height).
+    """
     filteredImg = np.copy(binaryImg)
     candidates = []  
     cols = filteredImg.shape[1]
@@ -89,7 +120,22 @@ def getCandidateStaffs(binaryImg, staffHeight):
 
 
 def removeLonelyStaffs(v, filteredImg, staffHeight, spaceHeight, eliminated):
-    
+    """
+    Removes disconnected (lonely) staff candidates based on connectivity analysis.
+
+    Args:
+        v (list): List of staff candidates.
+        filteredImg (numpy.ndarray): Filtered binary image.
+        staffHeight (int): Expected height of the staff.
+        spaceHeight (int): Space between staff lines.
+        eliminated (list): List to store eliminated candidates.
+
+    Returns:
+        tuple:
+            - numpy.ndarray: Updated binary image with lonely staff lines removed.
+            - list: Updated list of staff candidates.
+            - list: Updated list of eliminated candidates.
+    """
     img = np.copy(filteredImg)
     cols = filteredImg.shape[1]
     rows = filteredImg.shape[0]
@@ -125,6 +171,17 @@ def removeLonelyStaffs(v, filteredImg, staffHeight, spaceHeight, eliminated):
 
 
 def getLines(img, staffHeight, spaceHeight):
+    """
+    Detects staff lines in a binary image using peak detection on row sums.
+
+    Args:
+        img (numpy.ndarray): Binary image input.
+        staffHeight (int): Expected height of the staff.
+        spaceHeight (int): Space between staff lines.
+
+    Returns:
+        list: List of detected staff line indices.
+    """
     cp = img.copy()
 
     kernel = np.ones((staffHeight, 1))
