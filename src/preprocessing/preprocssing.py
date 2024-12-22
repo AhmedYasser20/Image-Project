@@ -198,6 +198,8 @@ class DeskewProcessor(BaseImageProcessor):
             line_length = lambda x: DeskewProcessor._line_length(np.array(x).flatten())
 
             lines.sort(key=line_length, reverse=True)
+            if len(lines) < 4:
+                return np.array(lines)
             return DeskewProcessor._sort_boundary_lines(lines[:4])
     @staticmethod 
     def _hough_lines_peak(image: np.ndarray , rho: float = 1.0) -> np.ndarray:
