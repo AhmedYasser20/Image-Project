@@ -2,6 +2,18 @@ from utils import *
 
 
 def mergeContours(staffless, boundingRects, staffHeight, spaceHeight):
+    """
+    Merges bounding rectangles of objects in an image based on proximity and size constraints.
+
+    Args:
+        staffless (ndarray): Binary image with staffs removed.
+        boundingRects (list of tuples): List of bounding rectangles represented as (x, y, w, h).
+        staffHeight (int): Height of the staff lines in the image.
+        spaceHeight (int): Height of the space between staff lines.
+
+    Returns:
+        list of tuples: Merged bounding rectangles represented as (x1, y1, x2, y2).
+    """
     taken = np.zeros((len(boundingRects),), dtype=bool)
     boundingRects = sorted(boundingRects, key=lambda b: b[0])
  
@@ -29,6 +41,17 @@ def mergeContours(staffless, boundingRects, staffHeight, spaceHeight):
     return mergedRects
 
 def getHalfs(lines, spaceHeight, height):
+    """
+    Divides the image height into segments based on detected lines.
+
+    Args:
+        lines (list): Detected horizontal line positions in the image.
+        spaceHeight (int): Height of the space between staff lines.
+        height (int): Height of the image.
+
+    Returns:
+        list: Positions of the halfway points dividing the image.
+    """
     detected_lines = np.zeros((height,))
     detected_lines[lines] = 1
 
@@ -49,6 +72,17 @@ def getHalfs(lines, spaceHeight, height):
     return halfs
 
 def getObjects(staffless, staffHeight, spaceHeight):
+    """
+    Identifies and merges objects in the staffless binary image.
+
+    Args:
+        staffless (ndarray): Binary image with staffs removed.
+        staffHeight (int): Height of the staff lines in the image.
+        spaceHeight (int): Height of the space between staff lines.
+
+    Returns:
+        list of tuples: Merged bounding rectangles represented as (x1, y1, x2, y2).
+    """
     cnt, hir = cv2.findContours(staffless, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     contours = []
@@ -71,6 +105,18 @@ def getObjects(staffless, staffHeight, spaceHeight):
     return mergedRects
 
 def segmentImage(staffless, lines, staffHeight, spaceHeight):
+    """
+    Segments an image into bounding rectangles based on horizontal lines and object detection.
+
+    Args:
+        staffless (ndarray): Binary image with staffs removed.
+        lines (list): Detected horizontal line positions in the image.
+        staffHeight (int): Height of the staff lines in the image.
+        spaceHeight (int): Height of the space between staff lines.
+
+    Returns:
+        list of tuples: Bounding rectangles for segmented image regions.
+    """
     halfs = getHalfs(lines, spaceHeight, staffless.shape[0])
     
     boundingRects = []
