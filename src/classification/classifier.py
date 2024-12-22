@@ -224,7 +224,7 @@ def downSize(image, width=1000):
     return resized  
 
 
-def knn_predict(X_train, y_train, X_test, k=3):
+def knn_predict(X_train, y_train, X_test, k):
     """
     Predicts the labels of test data using k-Nearest Neighbors (kNN) classification.
 
