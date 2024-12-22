@@ -1,5 +1,6 @@
 from utils import * 
 from postprocessing.notes import *
+import torch
 
 def extract_hog_features(img,target_img_size):
     img = cv2.resize(img, target_img_size)
@@ -28,6 +29,7 @@ def isDot(img, spaceHeight):
     if img.shape[0] > spaceHeight:
         return False
     return True
+
 
 def chord2text(img,cnt_pos,staffHeight,spaceHeight,lines):
     char_middle = ''
@@ -144,3 +146,25 @@ def downSize(image, width=1000):
     dsize  = (width, int(h * shrinkingRatio))
     resized = cv2.resize(image, dsize , interpolation=cv2.INTER_AREA)
     return resized  
+
+
+def knn_predict(X_train, y_train, X_test, k=3):
+    distances = torch.cdist(X_test, X_train)    
+    knn_indices = distances.topk(k, largest=False).indices
+    knn_labels = y_train[knn_indices]
+    y_pred = torch.mode(knn_labels, dim=1).values
+    return y_pred
+
+
+def predict_image(image, X_train, y_train, k=17):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if image is None:
+        raise ValueError(f"Invalid image")
+    
+    descriptors = extract_hog_features(image,(32,32))
+    if descriptors is None or len(descriptors) == 0:
+        raise ValueError(f"No descriptors found for")
+    
+    X_test = torch.tensor([descriptors], dtype=torch.float32).to(device)
+    y_pred = knn_predict(X_train, y_train, X_test, k)
+    return y_pred.item()
