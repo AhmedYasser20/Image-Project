@@ -1,6 +1,6 @@
 # Image Processing and Classification Project
-
-This project involves image processing and classification tasks using various libraries in Python. Below is a list of the main libraries used in this project along with the specific functions and methods utilized.
+You can simply run this project by runing the gui.py file, however, this project uses various python libraries. 
+Below is a list of the main libraries used in this project along with the specific functions and methods utilized.
 
 ## Libraries Used
 
