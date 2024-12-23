@@ -72,6 +72,7 @@ def getRefLengths(img):
         l1 = starts_shifted - (starts + l0)
         
         for j in range(len(starts)):
+         if 0 <= l0[j] < hist.shape[0] and 0 <= l1[j] < hist.shape[1]:
             hist[l0[j], l1[j]] += 1
     
     hist[:, 0] = 0

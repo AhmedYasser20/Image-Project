@@ -93,19 +93,8 @@ class BinarizationProcessor(BaseImageProcessor):
             img = img.astype(np.uint8) * 255
         return img
 
-    # def _otsu_threshold(self, image: np.ndarray) -> np.ndarray:
-    #     _, binarized_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    #     return binarized_image
-    
     def _otsu_threshold(self, image: np.ndarray) -> np.ndarray:
-    # Convert to grayscale if image is color
-        if len(image.shape) == 3:
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        else:
-            gray_image = image
-            
-        # Apply Otsu thresholding
-        _, binarized_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        _, binarized_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         return binarized_image
 
     def _adaptive_mean_threshold(self, image: np.ndarray) -> np.ndarray:
