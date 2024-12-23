@@ -1,5 +1,10 @@
 # Image Processing and Classification Project
-You can simply run this project by runing the gui.py file, however, this project uses various python libraries. 
+This project focuses on the development of an advanced image processing pipeline for musical symbol recognition. The goal is to automate the extraction and classification of musical symbols
+from images of sheet music, enabling their digital representation for further processing or analysis.Sheet music images typically contain various symbols, staff lines, and other elements that need 
+to be accurately segmented and classified to interpret the underlying musical content.
+
+You can simply run this project by runing the gui.py file.
+
 Below is a list of the main libraries used in this project along with the specific functions and methods utilized.
 
 ## Libraries Used
