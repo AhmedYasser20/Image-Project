@@ -21,3 +21,4 @@ __pycache__/
 *.log
 
 data/input/datasets
+data/output
