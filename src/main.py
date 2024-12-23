@@ -50,7 +50,7 @@ def GUI(image_path):
     for o in objects1:
         cv2.rectangle(cp1, (o[0],o[1]), (o[2],o[3]), (0, 255, 0), 3)
 
-    file = open("/Users/malekelsaka/Desktop/Fall 2024/Projects/Image-Project/src/MLP.pickle",'rb')
+    file = open("./src/MLP.pickle",'rb')
     MLP = pickle.load(file)
 
     random_seed = 42
